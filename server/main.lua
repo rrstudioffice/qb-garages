@@ -42,10 +42,19 @@ local vehicleClasses = {
     openwheel = 22,
 }
 
+-- local function arrayToSet(array)
+--     local set = {}
+--     for _, item in ipairs(array) do
+--         set[item] = true
+--     end
+--     return set
+-- end
 local function arrayToSet(array)
     local set = {}
-    for _, item in ipairs(array) do
-        set[item] = true
+    if array then
+        for _, item in ipairs(array) do
+            set[item] = true
+        end
     end
     return set
 end

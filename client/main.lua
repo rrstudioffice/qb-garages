@@ -120,7 +120,7 @@ local function CreateBlipsZones()
 
     for index, garage in pairs(Config.Garages) do
         local zone
-        if garage.showBlip then
+        if garage.showBlip or garage.type == 'gang' and PlayerGang.name == garage.job then
             CreateBlips(garage)
         end
         if garage.type == 'job' and (PlayerJob.name == garage.job or PlayerJob.type == garage.jobType) then
@@ -393,21 +393,21 @@ RegisterNetEvent('qb-garages:client:setHouseGarage', function(house, hasKey) -- 
         elseif not hasKey and ZoneExists(zoneName) then
             RemoveHouseZone(zoneName)
         end
-    else
-        QBCore.Functions.TriggerCallback('qb-garages:server:getHouseGarage', function(garageInfo) -- create garage if not exist
-            local garageCoords = json.decode(garageInfo.garage)
-            Config.Garages[formattedHouseName] = {
-                houseName = house,
-                takeVehicle = vector3(garageCoords.x, garageCoords.y, garageCoords.z),
-                spawnPoint = {
-                    vector4(garageCoords.x, garageCoords.y, garageCoords.z, garageCoords.w or garageCoords.h)
-                },
-                label = garageInfo.label,
-                type = 'house',
-                category = Config.VehicleClass['all']
-            }
-            TriggerServerEvent('qb-garages:server:syncGarage', Config.Garages)
-        end, house)
+    -- else
+    --     QBCore.Functions.TriggerCallback('qb-garages:server:getHouseGarage', function(garageInfo) -- create garage if not exist
+    --         local garageCoords = json.decode(garageInfo.garage)
+    --         Config.Garages[formattedHouseName] = {
+    --             houseName = house,
+    --             takeVehicle = vector3(garageCoords.x, garageCoords.y, garageCoords.z),
+    --             spawnPoint = {
+    --                 vector4(garageCoords.x, garageCoords.y, garageCoords.z, garageCoords.w or garageCoords.h)
+    --             },
+    --             label = garageInfo.label,
+    --             type = 'house',
+    --             category = Config.VehicleClass['all']
+    --         }
+    --         TriggerServerEvent('qb-garages:server:syncGarage', Config.Garages)
+    --     end, house)
     end
 end)
 
@@ -435,15 +435,27 @@ RegisterNetEvent('qb-garages:client:addHouseGarage', function(house, garageInfo)
     Config.Garages[formattedHouseName] = {
         houseName = house,
         takeVehicle = vector3(garageInfo.takeVehicle.x, garageInfo.takeVehicle.y, garageInfo.takeVehicle.z),
-        spawnPoint = {
-            vector4(garageInfo.takeVehicle.x, garageInfo.takeVehicle.y, garageInfo.takeVehicle.z, garageInfo.takeVehicle.w)
-        },
+        spawnPoint = { vector4(garageInfo.takeVehicle.x, garageInfo.takeVehicle.y, garageInfo.takeVehicle.z, 0) },
         label = garageInfo.label,
         type = 'house',
         category = Config.VehicleClass['all']
     }
-    TriggerServerEvent('qb-garages:server:syncGarage', Config.Garages)
 end)
+
+-- RegisterNetEvent('qb-garages:client:addHouseGarage', function(house, garageInfo) -- event from housing on garage creation
+--     local formattedHouseName = string.gsub(string.lower(house), ' ', '')
+--     Config.Garages[formattedHouseName] = {
+--         houseName = house,
+--         takeVehicle = vector3(garageInfo.takeVehicle.x, garageInfo.takeVehicle.y, garageInfo.takeVehicle.z),
+--         spawnPoint = {
+--             vector4(garageInfo.takeVehicle.x, garageInfo.takeVehicle.y, garageInfo.takeVehicle.z, garageInfo.takeVehicle.w)
+--         },
+--         label = garageInfo.label,
+--         type = 'house',
+--         category = Config.VehicleClass['all']
+--     }
+--     TriggerServerEvent('qb-garages:server:syncGarage', Config.Garages)
+-- end)
 
 -- Handlers
 
@@ -463,3 +475,34 @@ end)
 RegisterNetEvent('QBCore:Client:OnJobUpdate', function(job)
     PlayerJob = job
 end)
+
+-- CreateThread(function()
+-- 	while true do
+-- 		local Sleep = 1500
+-- 		local coords = GetEntityCoords(PlayerPedId())
+-- 		for k, v in pairs(Config.Garages) do
+-- 			-- if (1 ~= -1 and #(coords - vector3(v.spawnPoint[0].x, v.spawnPoint[0].y, v.spawnPoint[0].z)) < 5) then
+-- 			-- 	Sleep = 0
+-- 			-- 	DrawMarker(1, v.spawnPoint[0].x, v.spawnPoint[0].y, v.spawnPoint[0].z, 0.0, 0.0, 0.0, 0, 0.0, 0.0, 3.0, 3.0, 1.0,
+-- 			-- 		50, 200, 50, 100, false, true, 2, false, '', '', false)
+-- 			-- end
+--             local zone = BoxZone:Create(coords, 1, 2, {
+--                 name = v.label,
+--                 heading = 340.0,
+--                 minZ = coords.z - 1.0,
+--                 maxZ = coords.z + 5.0,
+--                 debugPoly = false
+--             })
+--             zone:onPlayerInOut(function(isPointInside)
+--                 if isPointInside then
+--                     exports['qb-core']:DrawMarker(v.spawnPoint[0])
+--                 else
+--                     exports['qb-core']:HideText()
+--                 end
+--                 IsInsideEntranceZone = isPointInside
+--             end)
+--         end
+
+-- 		Wait(Sleep)
+-- 	end
+-- end)
